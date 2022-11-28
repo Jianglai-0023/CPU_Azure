@@ -3,14 +3,16 @@ module IF(
     input wire          clk,rst,rdy,
     //I-Cache
     input wire [31:0]   ins_ori,
-    output reg[31:0]   pc_cache,
+    output reg[31:0]    pc_cache,
     input wire          ins_ori_flag,
+    output wire         pc_flag,
     //Decoder
     output wire[31:0]   ins,
     output wire         ins_flag,
+    output reg [31 : 0] ins_imm,
     output reg[31:0]    pc_decode,
     output reg[31:0]    pc_decode_bc,
-    output reg       pc_decode_bc_flag,
+    output reg          pc_decode_bc_flag,
     //ROB
     input wire[31:0]    jp_pc,
     input wire          jp_wrong
@@ -37,7 +39,9 @@ always @(*)begin
                     imm = {{20{ins_ori[31]}}, ins_ori[7], ins_ori[30:25], ins_ori[11:8]} << 1;
                 end
                 default: imm = {{20{ins_ori[31]}}, ins_ori[7], ins_ori[30:25], ins_ori[11:8]} << 1; //branch
+            
             endcase
+            ins_imm = imm;
     end 
     else if(!ins_ori_flag)begin end
     pc_decode = pc;
