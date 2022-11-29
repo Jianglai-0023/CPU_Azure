@@ -11,7 +11,11 @@ module ROB(
   //CDB
   output reg [31 : 0]  rd_val_update,   //修改的值
   output reg [4 : 0]   rd_idx_update,   //需要被修改的reg
-  output reg [`RBID]    front,rear      //ROB reorder的位置 只有在regfile的reorder与rob reorder相同时，regfile才需要被置零
+  output reg [`RBID]    front,rear,      //ROB reorder的位置 只有在regfile的reorder与rob reorder相同时，regfile才需要被置零
+  //ALU
+  input wire [`RBID]    rob_reorder,
+  input wire [`RLEN]    alu_val,
+  input wire            alu_flag
   
 );
   reg [`RLEN]     val         [`RBSZ];      //rd写入的值
@@ -37,6 +41,10 @@ module ROB(
         val[front] <= 32'b0;
         front <= -(~front);
         if(is_full)is_full<= `False;
+    end
+    if(alu_flag)begin//更新ready
+        val[rob_reorder] <= alu_val;
+        is_ready[rob_reorder] <= `True;
     end
   end
   

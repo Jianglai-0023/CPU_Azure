@@ -16,7 +16,13 @@ module RS(
     input  wire [3 : 0 ]     rob_reorder,   //rd变量在ROB中的编号
     // input  wire [4 : 0 ]     rd_addr,       
     input  wire [31 : 0]     rd_val,        //rd变量的现有值
-    input  wire              rd_flag        //是否有可用的rd变量
+    input  wire              rd_flag,        //是否有可用的rd变量
+    //ALU
+    output reg  [5 : 0 ]     op_alu,
+    output reg  [31 : 0]     rs1_alu,
+    output reg  [31 : 0]     rs2_alu,
+    output reg               flag_alu,
+    output wire [3 : 0]      rob_alu,
 );
     reg  [`ILEN]    ins             [`RSSZ];                            // RS 中保存的指令
     reg  [`RSSZ]    used;                                               // RS 的使用状态
@@ -33,17 +39,17 @@ assign rs2_addr = rs2;
 
 always @(*)begin
     if(opflag)begin//加入新的op
-    for(i = 0; i < `RSSIZE; i = i + 1)begin//考虑RS is full的情况
-        if(!used[i])begin
-            ins[i]=opcode;
-            ROB_idx[i] = rob_reorder;//考虑ROB满的情况  
-            val1_ready[i] = rs1_ready;
-            val2_ready[i] = rs2_ready;
-            val1[i] = rs1_val;
-            val2[i] = rs2_val;
-            break;
+        for(i = 0; i < `RSSIZE; i = i + 1)begin//考虑RS is full的情况
+            if(!used[i])begin
+                ins[i]=opcode;
+                ROB_idx[i] = rob_reorder;//考虑ROB满的情况  
+                val1_ready[i] = rs1_ready;
+                val2_ready[i] = rs2_ready;
+                val1[i] = rs1_val;
+                val2[i] = rs2_val;
+                break;
+            end
         end
-    end
     end
     else if(!opflag);
 
@@ -62,9 +68,17 @@ always @(*)begin
         end
     end
     else begin //发送给alu
-        
+        for(i = 0; i < `RSSIZE; i = i+1)begin
+            if(val1_ready[i]&&val2_ready[i]&&used[i])begin
+                flag_alu = `True;
+                rs1_alu = val1[i];
+                rs2_alu = val2[i];
+                op_alu = ins[i];
+                rob_alu = ROB_idx[i];
+                used[i] = `False; 
+            end
+        end
     end
-
 end
 
                     
