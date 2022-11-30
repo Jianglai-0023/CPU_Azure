@@ -108,6 +108,10 @@ MemCtrl Memctrl(
   .ic_isok(mem_ic_fg)
 );
 
+RS RS(
+
+);
+
 
 always @(posedge clk_in)
   begin
