@@ -1,4 +1,4 @@
-# CPU
+# CPU_Azure
 
 ## 一、设计草稿
 ![assign](https://github.com/Jianglai-0023/CPU_Azure/blob/main/README.assets/IMG_1669.jpg)
@@ -20,4 +20,4 @@
 * (from LSB) 如何处理多个模块同时调用memctrl的问题?
 
 ## jornal
-12/2 初步完成全部连线以及各模块功能代码
+12/2 初步完成全部连线以及各模块功能代码💁🏻
