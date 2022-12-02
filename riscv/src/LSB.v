@@ -10,16 +10,17 @@ module LSB(
     input wire          is_val1,is_val2,
     //MemCtrl
     output reg          is_write,
-    output reg          flag,
-    output reg [31 : 0] addr,
-    input wire [31 : 0]  val_in,
+    output reg          flag,    
+    output reg [31 : 0] addr,    
+    input wire [31 : 0] val_in,
     input wire          mem_ok,
-    output reg [31 : 0]  val_out,
-    output reg [5 : 0]  store_op,
-    //ROB
+    output reg [31 : 0] val_out,
+    output reg [5 : 0]  lsb_op,
+    //CDB
     output reg [`RBID] rob_reorder,
     output reg [31 : 0]rob_val,
-    output reg         rob_flag
+    output reg         rob_flag,
+    output wire        isfull
 );
     reg full;
     reg [`ILEN]     ins                 [`LSSZ];     //存储指令
@@ -30,7 +31,7 @@ module LSB(
     reg [`LSSZ]     rs1_ready,rs2_ready        ;
     reg [`RBID]     ROB_idx             [`LSSZ];      //load 对应的rob   
     reg [`LSID]     front,rear;                       //rear放在最后一个空节点，头节点放数据；
-
+assign isfull = full;
 always @(posedge clk) begin//接受信息，将指令加入lsb
     if(!full&&op_flag)begin//加入信息
         ins[rear] <= opcode;
@@ -48,6 +49,7 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
     end
     else if((full||!op_flag)&&(front!=rear || is_commit[front]))begin//push front
         if(rs1_ready[front]&&rs2_ready[front])begin//todo branch
+        lsb_op <= opcode;
             case(opcode)//todo 可以先统一load/store 再根据位数处理
                 `LB:begin
                     if(mem_ok)begin
@@ -144,7 +146,7 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
                         addr <= rs1_val[front] + imm_val[front];
                         val_out <= {24'b0,rs2_val[front][7:0]};
                         flag <= `True;
-                        store_op <= opcode;
+                        
                     end   
                 end
                 `SW:begin
@@ -159,7 +161,6 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
                         addr <= rs1_val[front] + imm_val[front];
                         val_out <= rs2_val[front];
                         flag <= `True;
-                        store_op <= opcode;
                     end   
                 end
                 `SH:begin
@@ -174,7 +175,6 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
                         addr <= rs1_val[front] + imm_val[front];
                         val_out <= {16'b0,rs2_val[front][15:0]};
                         flag <= `True;
-                        store_op <= opcode;
                     end   
                 end
                 default:flag <= `False;

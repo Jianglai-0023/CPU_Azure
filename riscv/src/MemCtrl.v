@@ -11,23 +11,24 @@ module MemCtrl(//现在只可以处理I-cache发来的指令
     //ICache
     input  wire [31 : 0] addr_target,
     input  wire          ic_flag, // is wating for instruction
-    output reg [31 : 0]  ic_val,
     output reg [31 : 0]  ic_val_out,
     output reg           ic_isok, 
 
     //LSB
-    input wire [31 : 0]  lsb_addr,
+    input  wire [31 : 0] lsb_addr,
     input  wire          lsb_flag,
-    input wire [5 : 0]   opcode,
-    input wire [31 : 0]  lsb_store,
+    input  wire [5 : 0]  opcode,
+    input  wire [31 : 0] lsb_store,
     output wire          lsb_isok,
-    output reg  [31 : 0] lsb_val,
+    
     output reg  [31 : 0] lsb_val_out
 );
 //todo lsb的store指令，一次写入不一定为4字节
 reg [1:0] if_stp;
 reg [1:0] lsb_stp;
 reg       lsb_onestp;
+reg [31 : 0] ic_val;
+reg  [31 : 0] lsb_val;
 // reg [31 :0] store_val;
 always @(*) begin
     if(cannot_read)begin end

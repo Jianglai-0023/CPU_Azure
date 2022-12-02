@@ -22,7 +22,7 @@ module RS(
     output reg  [31 : 0]     rs1_alu,
     output reg  [31 : 0]     rs2_alu,
     output reg               flag_alu,
-    output wire [3 : 0]      rob_alu,
+    output wire [3 : 0]      rob_alu
 );
     reg  [`ILEN]    ins             [`RSSZ];                            // RS 中保存的指令
     reg  [`RSSZ]    used;                                               // RS 的使用状态
