@@ -50,6 +50,10 @@
 `define LUIOP       7'd55
 `define AUIPCOP     7'd23
 `define BRANCHOP    7'd99
+`define ITYPEOP     7'd3
+`define STYPEOP     7'd35
+`define ADDIOP      7'd19
+`define RTYPEOP     7'd51
 `define RSSIZE      16                                                  // RS 的大小
 `define LSBSIZE     16                                                  // LSB 的大小
 `define ROBSIZE     16                                                  // ROB 的大小

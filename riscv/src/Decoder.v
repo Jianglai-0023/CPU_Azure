@@ -1,34 +1,45 @@
-`include "defines.v";
+`include "defines.v"
 module Decoder(
      input wire           clk,rst,rdy,
      //IF
      input wire [31 : 0]  ins,
      input wire           ins_flag,
      inout wire [31 : 0]  ins_imm,
-     input wire [31 : 0]  pc,
-     input wire           pc_bc_flag,
-     input wire [31 : 0]  pc_bc,
-     output wire          if_stall,
+     input wire [31 : 0]  rd_val,
+    //  input wire [31 : 0]  pc,
+    //  input wire           pc_bc_flag,
+    //  input wire [31 : 0]  pc_bc,
+    //  output wire          if_stall,
      //RS
-     output reg [5 :  0]  opcode,
-     output reg [31 : 0]  imm,
-     output reg [4 :  0]  rs1,rs2,rd,
-     output wire          op_flag,
+     
+    //  input wire           bc_out, //不带分支预测，
     
     //ROB
-    input wire            rob_full,
-    //LSB
-    input wire            lsb_full
+    output reg [5 :  0]  opcode,
+    output reg [6 : 0]   ophead,
+    output reg [31 : 0]  imm,
+    output reg [4 :  0]  rs1,rs2,rd,
+    output wire          op_flag,
+    output wire [31 : 0] rob_rd_val
 );
 assign op_flag = ins_flag;
-assign if_stall = rob_full|lsb_full;
+assign rob_rd_val = rd_val; 
+// assign if_stall = rob_full|lsb_full|((ins[6:0]==7'b1100111|ins[6:0]==7'b1100011)&!bc_out);//every branch
 //for op code
 always @(*)begin
-    if(ins_flag)begin
+    if(rst)begin
+        
+    end
+    else if(!rdy)begin
+        
+    end
+    else begin
+        if(ins_flag)begin
         imm = ins_imm;
         rs1 = ins[19:15];
         rs2 = ins[24:20];
         rd = ins[11:7];
+        ophead = ins[6 : 0];
         case(ins[6:0])
             7'b1100011:begin//Btype
                case(ins[14:12])
@@ -110,8 +121,9 @@ always @(*)begin
             7'b1100111:opcode = `JALR;//JALR
             default:;
         endcase
-
+    end 
     end
+   
 end
 
 

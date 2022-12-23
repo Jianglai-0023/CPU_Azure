@@ -1,5 +1,6 @@
-`include "defines.v";
+`include "defines.v"
 module ALU(
+    //RS
     input wire [31 : 0] val1,val2,
     input wire          flag,
     input wire [5 : 0] opcode,
@@ -7,11 +8,15 @@ module ALU(
     //CDB
     output reg [31 : 0] ans,
     output wire flag_out,
-    output wire [`RBID] rob_
+    output wire [`RBID] rob_,
+    output wire [5 : 0]op
 );
 assign flag_out = flag;
 assign rob_ = rob_reorder;
+assign op = opcode;
+// assign jp_ok = (opcode==`BEQ|opcode==`BNE|opcode==`JALR|opcode==`BLT|opcode==`BGE|opcode==`BLTU|opcode==`BGEU);
     always @(*) begin
+        
         if(flag)begin
         case(opcode)
         `SUB :ans = val1 - val2;
@@ -39,7 +44,8 @@ assign rob_ = rob_reorder;
         `BGE :ans = $signed(val1) >= $signed(val2); 
         `BLTU:ans = val1 < val2; 
         `BGEU:ans = val1 >= val2; 
-        `JALR:ans = (val1 + $signed(val2)) & ~(32'b1);
+        `JALR:ans = val1 + val2;
+        default:ans = `null32;
         endcase 
         end
         else begin
