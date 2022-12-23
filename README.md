@@ -1,4 +1,6 @@
-# Toy CPU Azure
+# 🌎 Toy CPU Azure 🌎
+## Note for TAs👀
+目前版本可通过lvalue点
 
 ## 设计草稿📝
 ![assign](https://github.com/Jianglai-0023/CPU_Azure/blob/main/README.assets/IMG_1669.jpg)
