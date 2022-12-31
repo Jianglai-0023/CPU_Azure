@@ -22,11 +22,13 @@ module LSB(
     output reg [31 : 0]lsb_val,
     output reg         lsb_flag,
     output wire        isfull,
+    output reg [5 : 0] lsb_rob_op,
     
     //CDB alu
     input wire [`RBID] alu_reorder,
     input wire [31 : 0] alu_val,
-    input wire          alu_flag
+    input wire          alu_flag,
+    input wire [5 : 0]  alu_op
 
 );
     reg full;
@@ -122,157 +124,197 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
     end
     
     if(front != rear || front == rear && is_commit[front] == `False)begin//push front
-        if(rs1_ready[front]&&rs2_ready[front])begin//todo branch
+        if(rs1_ready[front]&&rs2_ready[front])begin
         // $display("%s","LSB can commit");
-        if(ins[front]==`JALR || ins[front]==`BEQ||ins[front]==`BNE||ins[front]==`BLT||ins[front]==`BGE||ins[front]==`BLTU||ins[front]==`BGEU)begin
-            is_commit[front] <= `True;
-            front <= -(~front);
+            if(ins[front]==`JALR || ins[front]==`BEQ||ins[front]==`BNE||ins[front]==`BLT||ins[front]==`BGE||ins[front]==`BLTU||ins[front]==`BGEU)begin
+                is_commit[front] <= `True;
+                front <= -(~front);
+                lsb_flag<=`False;
+            end
+            else begin
+                lsb_op <= ins[front];
+                lsb_rob_op<=ins[front];
+                case(ins[front])//todo 可以先统一load/store 再根据位数处理
+                    `LB:begin
+                        if(mem_ok)begin
+                            tomem_flag <= `False;
+                            lsb_flag <= `True;
+                            // rob_op<=ins[front];
+                            rob_reorder <= ROB_idx[front];
+                            lsb_val <={{24{val_in[7]}}, val_in[7:0]};
+                            is_commit[front] <= `True;
+                            front <= -(~front);
+
+                        end
+                        else begin
+                            lsb_flag <= `False;
+                            addr <= rs1_val[front] + rs2_val[front];
+                            tomem_flag <= `True; 
+                        end
+
+                    end
+                    `LH:begin
+                        if(mem_ok)begin
+                           tomem_flag <= `False;
+                            lsb_flag <= `True;
+                            rob_reorder <= ROB_idx[front];
+                            lsb_val <= {{16{val_in[15]}},val_in[15:0]};
+                            is_commit[front] <= `True;
+                            front <= -(~front); 
+                        end
+                        else begin
+                            lsb_flag <= `False;
+                            addr <= rs1_val[front] + rs2_val[front];
+                            tomem_flag <= `True; 
+                        end
+                    end
+                    `LW:begin
+                        if(mem_ok)begin
+                            tomem_flag <= `False;
+                            lsb_flag <= `True;
+                            rob_reorder <= ROB_idx[front];
+                            lsb_val <= val_in;
+                            is_commit[front] <= `True;
+                            front <= -(~front); 
+                            // $display("%s","ANSWER");
+                            // $display("%d",val_in); 
+                            // $display("%s","-------");
+                            // $display("%d",addr);
+                            // $display("%x",addr); 
+                            // // $display("%d",rs2_val[front]);
+                            // // $display("%x",rs2_val[front]);
+                            // $display("%s","********");
+                        end
+                        else begin
+                            lsb_flag <= `False;
+                            addr <= rs1_val[front] + rs2_val[front];
+                            
+                            tomem_flag <= `True; 
+                        end 
+
+                    end
+                    `LBU:begin
+                        if(mem_ok)begin
+                           tomem_flag <= `False;
+                            lsb_flag <= `True;
+                            rob_reorder <= ROB_idx[front];
+                            lsb_val <= {24'b0,val_in[7:0]};
+                            is_commit[front] <= `True;
+                            front <= -(~front); 
+                        end
+                        else begin
+                            lsb_flag <= `False;
+                            addr <= rs1_val[front] + rs2_val[front];
+                            tomem_flag <= `True; 
+                        end  
+                    end
+                    `LHU:begin
+                        if(mem_ok)begin
+                           tomem_flag <= `False;
+                            lsb_flag <= `True;
+                            rob_reorder <= ROB_idx[front];
+                            lsb_val <= {16'b0,val_in[15:0]};
+                            is_commit[front] <= `True;
+                            front <= -(~front); 
+                        end
+                        else begin
+                            lsb_flag <= `False;
+                            addr <= rs1_val[front] + rs2_val[front];
+                            tomem_flag <= `True; 
+                        end   
+                    end
+                    `SB:begin
+                        lsb_flag <= `False;
+                        if(mem_ok)begin
+                            tomem_flag <= `False;
+                            is_commit[front] <= `True;
+                            front <= -(~front); 
+                        end
+                        else begin
+                        
+                            addr <= rs1_val[front] + imm_val[front];
+                            val_out <= {24'b0,rs2_val[front][7:0]};
+                            tomem_flag <= `True;
+
+                        end   
+                    end
+                    `SW:begin
+                        lsb_flag <= `False;
+                        if(mem_ok)begin
+                            tomem_flag <= `False;
+                            is_commit[front] <= `True;
+                            front <= -(~front); 
+                            // $display("%s","-----SW-----");
+                            // $display("%d",addr);
+                            // $display("%x",addr); 
+                            // // $display("%d",rs2_val[front]);
+                            // // $display("%x",rs2_val[front]);
+                            // $display("%s","***SW***");
+                        end
+                        else begin
+                            addr <= rs1_val[front] + imm_val[front];
+                            val_out <= rs2_val[front];
+                            tomem_flag <= `True;
+                            
+                        end   
+                    end
+                    `SH:begin
+                        lsb_flag <= `False;
+                        if(mem_ok)begin
+                            tomem_flag <= `False;
+                            is_commit[front] <= `True;
+                            front <= -(~front); 
+                        end
+                        else begin
+                            addr <= rs1_val[front] + imm_val[front];
+                            val_out <= {16'b0,rs2_val[front][15:0]};
+                            tomem_flag <= `True;
+                        end   
+                    end
+                    default begin
+                        tomem_flag <= `False;
+                        lsb_flag <= `False;
+                    end
+                endcase
+            end 
         end
         else begin
-            lsb_op <= ins[front];
-            case(ins[front])//todo 可以先统一load/store 再根据位数处理
-                `LB:begin
-                    if(mem_ok)begin
-                        tomem_flag <= `False;
-                        lsb_flag <= `True;
-                        // rob_op<=ins[front];
-                        rob_reorder <= ROB_idx[front];
-                        lsb_val <={{24{val_in[7]}}, val_in[7:0]};
-                        is_commit[front] <= `True;
-                        front <= -(~front);
-
-                    end
-                    else begin
-                        lsb_flag <= `False;
-                        addr <= rs1_val[front] + rs2_val[front];
-                        tomem_flag <= `True; 
-                    end
-
-                end
-                `LH:begin
-                    if(mem_ok)begin
-                       tomem_flag <= `False;
-                        lsb_flag <= `True;
-                        rob_reorder <= ROB_idx[front];
-                        lsb_val <= {{16{val_in[15]}},val_in[15:0]};
-                        is_commit[front] <= `True;
-                        front <= -(~front); 
-                    end
-                    else begin
-                        lsb_flag <= `False;
-                        addr <= rs1_val[front] + rs2_val[front];
-                        tomem_flag <= `True; 
-                    end
-                end
-                `LW:begin
-                    if(mem_ok)begin
-                        tomem_flag <= `False;
-                        lsb_flag <= `True;
-                        rob_reorder <= ROB_idx[front];
-                        lsb_val <= val_in;
-                        is_commit[front] <= `True;
-                        front <= -(~front); 
-                    end
-                    else begin
-                        lsb_flag <= `False;
-                        addr <= rs1_val[front] + rs2_val[front];
-                        tomem_flag <= `True; 
-                    end 
-                     
-                end
-                `LBU:begin
-                    if(mem_ok)begin
-                       tomem_flag <= `False;
-                        lsb_flag <= `True;
-                        rob_reorder <= ROB_idx[front];
-                        lsb_val <= {24'b0,val_in[7:0]};
-                        is_commit[front] <= `True;
-                        front <= -(~front); 
-                    end
-                    else begin
-                        lsb_flag <= `False;
-                        addr <= rs1_val[front] + rs2_val[front];
-                        tomem_flag <= `True; 
-                    end  
-                end
-                `LHU:begin
-                    if(mem_ok)begin
-                       tomem_flag <= `False;
-                        lsb_flag <= `True;
-                        rob_reorder <= ROB_idx[front];
-                        lsb_val <= {16'b0,val_in[15:0]};
-                        is_commit[front] <= `True;
-                        front <= -(~front); 
-                    end
-                    else begin
-                        lsb_flag <= `False;
-                        addr <= rs1_val[front] + rs2_val[front];
-                        tomem_flag <= `True; 
-                    end   
-                end
-                `SB:begin
-                    lsb_flag <= `False;
-                    if(mem_ok)begin
-                        tomem_flag <= `False;
-                        is_commit[front] <= `True;
-                        front <= -(~front); 
-                    end
-                    else begin
-                    
-                        addr <= rs1_val[front] + imm_val[front];
-                        val_out <= {24'b0,rs2_val[front][7:0]};
-                        tomem_flag <= `True;
-                        
-                    end   
-                end
-                `SW:begin
-                    lsb_flag <= `False;
-                    if(mem_ok)begin
-                        tomem_flag <= `False;
-                        is_commit[front] <= `True;
-                        front <= -(~front); 
-                    end
-                    else begin
-                        addr <= rs1_val[front] + imm_val[front];
-                        val_out <= rs2_val[front];
-                        tomem_flag <= `True;
-                    end   
-                end
-                `SH:begin
-                    lsb_flag <= `False;
-                    if(mem_ok)begin
-                        tomem_flag <= `False;
-                        is_commit[front] <= `True;
-                        front <= -(~front); 
-                    end
-                    else begin
-                        addr <= rs1_val[front] + imm_val[front];
-                        val_out <= {16'b0,rs2_val[front][15:0]};
-                        tomem_flag <= `True;
-                    end   
-                end
-                default begin
-                    tomem_flag <= `False;
-                    lsb_flag <= `False;
-                end
-            endcase
-        end 
+        lsb_flag <=`False;
+        tomem_flag <= `False;
         end
                
     end
     if(alu_flag)begin
         for(i = 0; i < `LSBSIZE; i = i + 1)begin
-            if(is_commit[i] == `False && !rs1_ready[i]&&rs1_val[i]=={alu_reorder,28'b0})begin
+            if(is_commit[i] == `False && !rs1_ready[i]&&rs1_val[i]=={28'b0,alu_reorder})begin
                 rs1_ready[i] <= `True;
                 rs1_val[i] <= alu_val;   
             end
-            else ;                             
-            if(is_commit[i] == `False && !rs2_ready[i]&&rs2_val[i]=={alu_reorder,28'b0})begin
+            else;
+                                   
+            if(is_commit[i] == `False && !rs2_ready[i]&&rs2_val[i]=={28'b0,alu_reorder})begin
                 rs2_ready[i] <= `True;
                 rs1_val[i] <= alu_val;
             end
             else ;
         end
     end
+    else;
+
+    if(lsb_flag)begin
+        for(i = 0; i < `LSBSIZE; i = i + 1)begin
+            if(is_commit[i] == `False && !rs1_ready[i]&&rs1_val[i]=={28'b0,rob_reorder})begin
+                rs1_ready[i] <= `True;
+                rs1_val[i] <= lsb_val;   
+            end
+                                   
+            if(is_commit[i] == `False && !rs2_ready[i]&&rs2_val[i]=={28'b0,rob_reorder})begin
+                rs2_ready[i] <= `True;
+                rs1_val[i] <= lsb_val;
+            end
+            else ;
+        end 
+    end
+    else;
 end
 endmodule

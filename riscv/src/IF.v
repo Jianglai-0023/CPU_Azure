@@ -91,10 +91,13 @@ reg     is_stall;
         else ins_flag = `False;
     
     end
-    
+   reg [31 :0] debug = 0; 
     always @(posedge clk)begin //接受icache并修改自己的pc
         // $display("%d",pc);
+        debug <= debug + 1;
+        // $display("%d",debug); 
         if(rst)begin
+            
             is_stall <= 0;
             pc_cache <= 32'b0;
         end
@@ -108,8 +111,10 @@ reg     is_stall;
         else if(!is_stall)begin
             // pc_flag <= `True;
             // ins_flag <= ins_ori_flag;
+            // $display("%x",pc_cache);
             if(ins_ori_flag)begin   
-                // $display("%d",ins_ori[6 : 0]); 
+                
+                // $display("%x",pc_cache);
             case(ins_ori[6:0])
             
                 `AUIPCOP:begin

@@ -23,6 +23,8 @@
 
 ## Data Point🐾
 - [x] 005
+- [x] 000
+- [x] 001
 
 ## Jornal🗓
 2022/12/2 初步完成全部连线以及各模块功能代码 💁🏻
@@ -40,6 +42,8 @@
 * S指令不需要放入ROB与RS中
 * L指令需要放入ROB，不需要放入RS中
 * initial块的作用与rst情况等价
+* IF stall 与 ROB full同时发生 可能导致branch无法放入ROB从而一直stall
+* ROB commit的时候恰好遇到了instruction in,commit 了之后val不可以设置成0
 **跳转错误时**
 信号由ROB即将commit branch指令时发出：
 * 清空ROB

@@ -12,7 +12,7 @@ module MemCtrl(
     input  wire [31 : 0] addr_target,
     input  wire          ic_flag, // is wating for instruction
     output reg [31 : 0]  ic_val_out,
-    output reg           ic_isok, 
+    output reg           ic_isok, //==>ins_flag_mem
 
     //LSB
     input  wire [31 : 0] lsb_addr,
@@ -52,31 +52,34 @@ always @(*) begin
         is_write = `False;
     end
     else begin
+        case(opcode)
+        `LB:lsb_val_out = {{24{mem_result[7]}},mem_result};
+        `LH:lsb_val_out = {{16{mem_result[7]}},mem_result,lsb_val[7:0]};
+        `LW:lsb_val_out = {mem_result,lsb_val[23 : 0]};
+        `LBU:lsb_val_out = {24'b0,mem_result};
+        `LHU:lsb_val_out = {8'b0,mem_result,lsb_val[15:0]};
+         default:lsb_val_out = 32'b0;
+        endcase
     //    ic_val_out = {mem_result,ic_val[23:0]}; 
-       if(lsb_flag && !ic_is_in)begin
+        if(lsb_flag && !ic_is_in && !lsb_isok)begin
         case(opcode)
         `LB:begin
-            lsb_val_out = {{24{mem_result[7]}},mem_result};
             mem_a = lsb_addr;
             is_write = `False;
         end
         `LH:begin 
-            lsb_val_out = {{16{mem_result[7]}},mem_result,lsb_val[7:0]};
             mem_a = lsb_addr + {31'b0,lsb_onestp};
             is_write = `False;
         end
         `LW:begin
-            lsb_val_out = {mem_result,lsb_val[23 : 0]};
             mem_a = lsb_addr + {30'b0,lsb_stp};
             is_write = `False;
         end
         `LBU:begin
-            lsb_val_out = {24'b0,mem_result};
             mem_a = lsb_addr;
             is_write = `False;
         end
         `LHU:begin
-            lsb_val_out = {8'b0,mem_result,lsb_val[15:0]};
             mem_a = lsb_addr + {31'b0,lsb_onestp};
             is_write = `False;
         end
@@ -218,7 +221,7 @@ always @(posedge clk) begin
                     endcase
                 end
                 `SW:begin
-
+                    lsb_stp <= -(~lsb_stp);
                     case(lsb_stp)
                     2'b00:begin
                         lsb_isok <= `False;
@@ -242,7 +245,12 @@ always @(posedge clk) begin
                 endcase
             end
             else if(ic_flag)begin
-                if_stp <= -(~if_stp);
+                if(!ic_is_in)begin
+                    if_stp<=2'b00;
+                    ic_is_in<=1;
+                end
+                else begin
+                    if_stp <= -(~if_stp);
                 case(if_stp)
                     2'b00:begin
                         ic_isok <= 0;
@@ -264,6 +272,8 @@ always @(posedge clk) begin
                         ic_is_in<= 1;
                     end
                 endcase 
+                end;
+                
             end
             else begin
                 ic_isok <= `False;

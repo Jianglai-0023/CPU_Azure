@@ -25,7 +25,12 @@ module RS(
     output reg [3 : 0]       rob_alu,
     input wire               alu_ans_flag,
     input wire [3 : 0]       alu_ans_reorder,
-    input wire [31 : 0]      alu_ans
+    input wire [31 : 0]      alu_ans,
+    //LSB
+    input wire lsb_flag,
+    input wire [`RBID] lsb_reorder,
+    input wire [31 : 0] lsb_val
+
 );
     reg  [`ILEN]    ins             [`RSSZ];                            // RS 中保存的指令
     reg  [`RSSZ]    used;                                               // RS 的使用状态
@@ -41,6 +46,7 @@ module RS(
 
 always @(*) begin
     if(rst)begin
+        isfull = 0;
         for(i = 0; i < 16; i = i+1)begin
             ins[i] = 6'b0;
             val1[i] = 32'b0;
@@ -48,18 +54,25 @@ always @(*) begin
             ROB_idx[i] = 4'b0;
         end        
     end
-    else ;
+    else if(!rdy)begin
+       
+    end
+
+    else begin
+        if(used==~(16'b0))isfull = 1;
+        else isfull = 0;
+    end
 end
 always @(posedge clk)begin
     if(rst)begin
         used <= 16'b0;
         val1_ready <= 16'b0;
         val2_ready <= 16'b0;
-        isfull <= 0;
         flag_alu <= 0;
     end
     else if(!rdy)begin
-        
+        $display("%s","RDY appear");
+         flag_alu <= `False;
     end
     else if(opflag)begin//加入新的op
         begin:loop
@@ -117,24 +130,46 @@ always @(posedge clk)begin
                     disable loop; 
                 end
             end
-            if(i== `RSSIZE) isfull <= 1;
-            else isfull <= 0; 
+            // if(i== `RSSIZE) isfull <= 1;
+            // else isfull <= 0; 
         end
     end
     else ;
-
+    
+    if(lsb_flag)begin
+       for(i = 0; i < `RSSIZE; i = i + 1)begin
+                // $display("%d",i);
+                // $display("%d",val2[0]);
+                // $display("%d",val1[0]);
+                if(used[i]&&!val1_ready[i]&&val1[i] == {28'b0,lsb_reorder})begin
+                    val1_ready[i] <= `True;
+                    val1[i] <= lsb_val;
+                end
+                if(used[i]&&!val2_ready[i]&&val2[i] == {28'b0,lsb_reorder})begin
+                    val2_ready[i] <= `True;
+                    val2[i] <= lsb_val;
+                end
+        end 
+    end
+    else ;
     if(alu_ans_flag)begin//给rename赋值
+    
         for(i = 0; i < `RSSIZE; i = i + 1)begin
-                if(used[i]&&!val1_ready[i]&&val1[i] == {rob_reorder,28'b0})begin
+                if(used[i]&&!val1_ready[i]&&val1[i] == {28'b0,rob_reorder})begin
+    
+    
                     val1_ready[i] <= `True;
                     val1[i] <= alu_ans;
                 end
-                if(used[i]&&!val2_ready[i]&&val2[i] == {rob_reorder,28'b0})begin
+                if(used[i]&&!val2_ready[i]&&val2[i] == {28'b0,rob_reorder})begin
+    
+    
                     val2_ready[i] <= `True;
                     val2[i] <= alu_ans;
                 end
         end
     end
+    else;
     begin:forloop
     for(i = 0; i < `RSSIZE; i = i+1)begin//发射给alu
         

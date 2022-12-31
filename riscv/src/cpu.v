@@ -192,7 +192,11 @@ RS RS(
   .rob_alu(rs_alu_rob),
   .alu_ans_flag(alu_CDB_flag),
   .alu_ans_reorder(alu_CDB_reorder),
-  .alu_ans(alu_CDB_val)
+  .alu_ans(alu_CDB_val),
+  //LSB
+  .lsb_reorder(lsb_CDB_reorder),
+  .lsb_val(lsb_CDB_val),
+  .lsb_flag(lsb_CDB_fg)
 );
 //CDB to RS&LSB
 wire    [31 : 0]     rob_CDB_imm;
@@ -218,10 +222,10 @@ wire              reg_rob_rs2fg;
 wire  [31 : 0]    reg_rob_val1;
 wire  [31 : 0]    reg_rob_val2;
 //LSB
- wire [`RBID] lsb_rob_reorder;
- wire         lsb_rob_fg;
- wire  [5 : 0] lsb_rob_op;
- wire  [31 : 0]lsb_rob_val;
+//  wire [`RBID] lsb_rob_reorder;
+//  wire         lsb_rob_fg;
+//  wire  [5 : 0] lsb_rob_op;
+//  wire  [31 : 0]lsb_rob_val;
 //CDB
 
   wire  [31 : 0] rob_CDB_outval;
@@ -284,10 +288,10 @@ ROB ROB(
     .alu_flag(alu_CDB_flag),
     .alu_opcode(alu_CDB_op),
     //LSB
-    .lsb_reorder(lsb_rob_reorder),
-    .lsb_flag(lsb_rob_fg),
-    .lsb_op(lsb_rob_op),
-    .lsb_val(lsb_rob_val)
+    .lsb_reorder(lsb_CDB_reorder),
+    .lsb_flag(lsb_CDB_fg),
+    .lsb_op(lsb_CDB_op),
+    .lsb_val(lsb_CDB_val)
  );  
 //memctrl
 wire   lsb_mem_fg;
@@ -298,8 +302,8 @@ wire [5 : 0]  lsb_mem_op;
 wire [`RBID]  lsb_CDB_reorder;
 wire [31: 0]  lsb_CDB_val;
 wire          lsb_CDB_fg;
+wire [5 : 0]  lsb_CDB_op;
 //alu CDB
-
 
 LSB LSB(
   .clk(clk_in),
@@ -329,6 +333,7 @@ LSB LSB(
   .lsb_val(lsb_CDB_val),
   .lsb_flag(lsb_CDB_fg),
   .isfull(lsb_if_full),
+  .lsb_rob_op(lsb_CDB_op),
   //CDB alu
   .alu_reorder(alu_CDB_reorder),
   .alu_val(alu_CDB_val),

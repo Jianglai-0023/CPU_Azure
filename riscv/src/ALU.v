@@ -28,9 +28,9 @@ assign op = opcode;
         `ORI :ans = val1 | val2; 
         `AND :ans = val1 & val2; 
         `ANDI:ans = val1 & val2;  
-        `SLL :ans = val1 << val2;
+        `SLL :ans = val1 << val2[4:0];
         `SLLI:ans = val1 << val2[4:0]; 
-        `SRL :ans = val1 >> val2; 
+        `SRL :ans = val1 >> val2[4:0]; 
         `SRLI:ans = val1 >> val2[4:0];  
         `SRA :ans = $signed(val1) >> val2; 
         `SRAI:ans = $signed(val1) >> val2[4:0]; 
@@ -42,9 +42,14 @@ assign op = opcode;
         `BNE :ans = val1 != val2; 
         `BLT :ans = $signed(val1) < $signed(val2); 
         `BGE :ans = $signed(val1) >= $signed(val2); 
-        `BLTU:ans = val1 < val2; 
+        `BLTU:begin
+             ans = val1 < val2; 
+            // $display("%s","BLTU");
+            // $display("%b",val1);
+            // $display("%b",val2);
+        end
         `BGEU:ans = val1 >= val2; 
-        `JALR:ans = val1 + val2;
+        `JALR:ans = (val1 + val2)&~(32'b1);
         default:ans = `null32;
         endcase 
         end
