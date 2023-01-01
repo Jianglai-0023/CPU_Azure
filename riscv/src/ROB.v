@@ -110,40 +110,40 @@ always @(*) begin
           is_val2 = 1;
         end
         `JALROP:begin
-         is_val1 = rs1_ready ? rs1_ready : (is_ready[rs1_val] ? is_ready[rs1_val] : alu_flag && {28'b0,rob_reorder}==rs1_val);
+         is_val1 = rs1_ready ? rs1_ready : (is_ready[rs1_val] ? is_ready[rs1_val] : ((alu_flag && {28'b0,rob_reorder}==rs1_val) ? 1 : lsb_flag && {28'b0,lsb_reorder}==rs1_val));
          is_val2 = 1; 
-         rs1_val_ =is_val1 ? (rs1_ready ? rs1_val:(is_ready[rs1_val] ? val[rs1_val] : alu_val)) : rs1_val; 
+         rs1_val_ =is_val1 ? (rs1_ready ? rs1_val:(is_ready[rs1_val] ? val[rs1_val] : ((alu_flag&&{28'b0,rob_reorder}==rs1_val)? alu_val : lsb_val))) : rs1_val; 
          rs2_val_ = de_imm;
         end
         `BRANCHOP:begin
-         is_val1 = rs1_ready ? rs1_ready : (is_ready[rs1_val] ? is_ready[rs1_val] : alu_flag && {28'b0,rob_reorder}==rs1_val);
-         is_val2 = rs2_ready ? rs2_ready : (is_ready[rs2_val] ? is_ready[rs2_val] : alu_flag && {28'b0,rob_reorder}==rs2_val); 
-         rs1_val_ =is_val1 ? (rs1_ready ? rs1_val:(is_ready[rs1_val] ? val[rs1_val] : alu_val)) : rs1_val; 
-         rs2_val_ =is_val2 ? (rs2_ready ? rs2_val:(is_ready[rs2_val] ? val[rs2_val] : alu_val)) : rs2_val;
-        end
+         is_val1 = rs1_ready ? rs1_ready : (is_ready[rs1_val] ? is_ready[rs1_val] : ((alu_flag && {28'b0,rob_reorder}==rs1_val) ? 1 : lsb_flag && {28'b0,lsb_reorder}==rs1_val));
+         is_val2 = rs2_ready ? rs2_ready : (is_ready[rs2_val] ? is_ready[rs2_val] : ((alu_flag && {28'b0,rob_reorder}==rs2_val) ? 1 : lsb_flag && {28'b0,lsb_reorder}==rs2_val));
+         rs1_val_ =is_val1 ? (rs1_ready ? rs1_val:(is_ready[rs1_val] ? val[rs1_val] : ((alu_flag&&{28'b0,rob_reorder}==rs1_val)? alu_val : lsb_val))) : rs1_val; 
+         rs2_val_ =is_val2 ? (rs2_ready ? rs2_val:(is_ready[rs2_val] ? val[rs2_val] : ((alu_flag&&{28'b0,rob_reorder}==rs2_val)? alu_val : lsb_val))) : rs2_val;        
+         end
         `ITYPEOP:begin
-          is_val1 = rs1_ready ? rs1_ready : (is_ready[rs1_val] ? is_ready[rs1_val] : alu_flag && {28'b0,rob_reorder}==rs1_val);;
+         is_val1 = rs1_ready ? rs1_ready : (is_ready[rs1_val] ? is_ready[rs1_val] : ((alu_flag && {28'b0,rob_reorder}==rs1_val) ? 1 : lsb_flag && {28'b0,lsb_reorder}==rs1_val));
           is_val2 =1;
-          rs1_val_ =is_val1 ? (rs1_ready ? rs1_val:(is_ready[rs1_val] ? val[rs1_val] : alu_val)) : rs1_val;  
+          rs1_val_ =is_val1 ? (rs1_ready ? rs1_val:(is_ready[rs1_val] ? val[rs1_val] : ((alu_flag&&{28'b0,rob_reorder}==rs1_val)? alu_val : lsb_val))) : rs1_val; 
           rs2_val_ = de_imm;  
         end
         `STYPEOP:begin
-         is_val1 = rs1_ready ? rs1_ready : (is_ready[rs1_val] ? is_ready[rs1_val] : alu_flag && {28'b0,rob_reorder}==rs1_val);
-         is_val2 = rs2_ready ? rs2_ready : (is_ready[rs2_val] ? is_ready[rs2_val] : alu_flag && {28'b0,rob_reorder}==rs2_val);
-         rs1_val_ =is_val1 ? (rs1_ready ? rs1_val:(is_ready[rs1_val] ? val[rs1_val] : alu_val)) : rs1_val;  
-         rs2_val_ =is_val2 ? (rs2_ready ? rs2_val:(is_ready[rs2_val] ? val[rs2_val] : alu_val)) : rs2_val;
+         is_val1 = rs1_ready ? rs1_ready : (is_ready[rs1_val] ? is_ready[rs1_val] : ((alu_flag && {28'b0,rob_reorder}==rs1_val) ? 1 : lsb_flag && {28'b0,lsb_reorder}==rs1_val));
+         is_val2 = rs2_ready ? rs2_ready : (is_ready[rs2_val] ? is_ready[rs2_val] : ((alu_flag && {28'b0,rob_reorder}==rs2_val) ? 1 : lsb_flag && {28'b0,lsb_reorder}==rs2_val));
+         rs1_val_ =is_val1 ? (rs1_ready ? rs1_val:(is_ready[rs1_val] ? val[rs1_val] : ((alu_flag&&{28'b0,rob_reorder}==rs1_val)? alu_val : lsb_val))) : rs1_val; 
+         rs2_val_ =is_val2 ? (rs2_ready ? rs2_val:(is_ready[rs2_val] ? val[rs2_val] : ((alu_flag&&{28'b0,rob_reorder}==rs2_val)? alu_val : lsb_val))) : rs2_val;        
         end
         `ADDIOP:begin
-          is_val1 = rs1_ready ? rs1_ready : (is_ready[rs1_val] ? is_ready[rs1_val] : alu_flag && {28'b0,rob_reorder}==rs1_val);
+         is_val1 = rs1_ready ? rs1_ready : (is_ready[rs1_val] ? is_ready[rs1_val] : ((alu_flag && {28'b0,rob_reorder}==rs1_val) ? 1 : lsb_flag && {28'b0,lsb_reorder}==rs1_val));
           is_val2 = 1; 
-          rs1_val_ =is_val1 ? (rs1_ready ? rs1_val:(is_ready[rs1_val] ? val[rs1_val] : alu_val)) : rs1_val;  
+          rs1_val_ =is_val1 ? (rs1_ready ? rs1_val:(is_ready[rs1_val] ? val[rs1_val] : ((alu_flag&&{28'b0,rob_reorder}==rs1_val)? alu_val : lsb_val))) : rs1_val; 
           rs2_val_ = de_imm;
         end
         `RTYPEOP:begin
-         is_val1 = rs1_ready ? rs1_ready : (is_ready[rs1_val] ? is_ready[rs1_val] : alu_flag && {28'b0,rob_reorder}==rs1_val);
-         is_val2 = rs2_ready ? rs2_ready : (is_ready[rs2_val] ? is_ready[rs2_val] : alu_flag && {28'b0,rob_reorder}==rs2_val); 
-         rs1_val_ =is_val1 ? (rs1_ready ? rs1_val:(is_ready[rs1_val] ? val[rs1_val] : alu_val)) : rs1_val; 
-         rs2_val_ =is_val2 ? (rs2_ready ? rs2_val:(is_ready[rs2_val] ? val[rs2_val] : alu_val)) : rs2_val;
+         is_val1 = rs1_ready ? rs1_ready : (is_ready[rs1_val] ? is_ready[rs1_val] : ((alu_flag && {28'b0,rob_reorder}==rs1_val) ? 1 : lsb_flag && {28'b0,lsb_reorder}==rs1_val));
+         is_val2 = rs2_ready ? rs2_ready : (is_ready[rs2_val] ? is_ready[rs2_val] : ((alu_flag && {28'b0,rob_reorder}==rs2_val) ? 1 : lsb_flag && {28'b0,lsb_reorder}==rs2_val));
+         rs1_val_ =is_val1 ? (rs1_ready ? rs1_val:(is_ready[rs1_val] ? val[rs1_val] : ((alu_flag&&{28'b0,rob_reorder}==rs1_val)? alu_val : lsb_val))) : rs1_val; 
+         rs2_val_ =is_val2 ? (rs2_ready ? rs2_val:(is_ready[rs2_val] ? val[rs2_val] : ((alu_flag&&{28'b0,rob_reorder}==rs2_val)? alu_val : lsb_val))) : rs2_val;        
         end
         default:;
       endcase

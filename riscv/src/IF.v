@@ -93,7 +93,7 @@ reg     is_stall;
     end
    reg [31 :0] debug = 0; 
     always @(posedge clk)begin //接受icache并修改自己的pc
-        // $display("%d",pc);
+       
         debug <= debug + 1;
         // $display("%d",debug); 
         if(rst)begin
@@ -111,7 +111,6 @@ reg     is_stall;
         else if(!is_stall)begin
             // pc_flag <= `True;
             // ins_flag <= ins_ori_flag;
-            // $display("%x",pc_cache);
             if(ins_ori_flag)begin   
                 
                 // $display("%x",pc_cache);

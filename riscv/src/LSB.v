@@ -89,8 +89,8 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
                 imm_val[rear] <= imm;
                 rs1_val[rear] <= rs1_val_;
                 rs2_val[rear] <= rs2_val_;
-                rs1_ready[rear] <= is_val1;
-                rs2_ready[rear] <= is_val2;
+                rs1_ready[rear] <= 1;
+                rs2_ready[rear] <= 1;
                 rear <= -(~rear);
                 is_commit[rear] <= `False;
             end
@@ -134,6 +134,24 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
             else begin
                 lsb_op <= ins[front];
                 lsb_rob_op<=ins[front];
+                // if(mem_ok)begin
+                //     $display("%s","------");
+                //     $display("%d",lsb_op);
+                //     $display("%d",addr); 
+                //     if(lsb_op==`SB || lsb_op == `SW || lsb_op == `SH)begin
+                //         $display("%d",val_out);
+                //     end
+                //     else begin
+                //         case(lsb_op)
+                //         `LB:$display("%d",{{24{val_in[7]}}, val_in[7:0]});
+                //         `LH:$display("%d",{{16{val_in[15]}},val_in[15:0]});
+                //         `LW:$display("%d",val_in);
+                //         `LBU:$display("%d",{24'b0,val_in[7:0]});
+                //         `LHU:$display("%d",{16'b0,val_in[15:0]});
+                //         endcase
+                //     end
+                // end
+                // else ;
                 case(ins[front])//todo 可以先统一load/store 再根据位数处理
                     `LB:begin
                         if(mem_ok)begin
@@ -281,9 +299,9 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
         else begin
         lsb_flag <=`False;
         tomem_flag <= `False;
-        end
-               
+        end   
     end
+
     if(alu_flag)begin
         for(i = 0; i < `LSBSIZE; i = i + 1)begin
             if(is_commit[i] == `False && !rs1_ready[i]&&rs1_val[i]=={28'b0,alu_reorder})begin
@@ -294,7 +312,7 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
                                    
             if(is_commit[i] == `False && !rs2_ready[i]&&rs2_val[i]=={28'b0,alu_reorder})begin
                 rs2_ready[i] <= `True;
-                rs1_val[i] <= alu_val;
+                rs2_val[i] <= alu_val;
             end
             else ;
         end
@@ -310,7 +328,7 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
                                    
             if(is_commit[i] == `False && !rs2_ready[i]&&rs2_val[i]=={28'b0,rob_reorder})begin
                 rs2_ready[i] <= `True;
-                rs1_val[i] <= lsb_val;
+                rs2_val[i] <= lsb_val;
             end
             else ;
         end 

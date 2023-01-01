@@ -78,13 +78,13 @@ always @(posedge clk) begin
                 //    $display("%x",rd_out_val); 
                 end
                 else begin
-                    // if(rd_out_a==11)begin
-                    //     // $display("%s","REGONE");
-                    //     // $display("%b",rd_out_val);
+                    // if(rd_out_a==19)begin
+                    //     $display("%s","REGONE");
+                    //     $display("%d",rd_out_val);
                     // end
-                    // else if(rd_out_a==12)begin
+                    // else if(rd_out_a==14)begin
                     //     $display("%s","REGTWO");
-                    //     $display("%b",rd_out_val);
+                    //     $display("%d",rd_out_val);
                     // end
                     if(ROB_pos[rd_out_a] != rd_out_rob)begin
                         reg_val[rd_out_a] <= rd_out_val;

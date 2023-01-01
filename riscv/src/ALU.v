@@ -40,7 +40,12 @@ assign op = opcode;
         `SLTU:ans = val1 < val2; 
         `BEQ :ans = val1 == val2; 
         `BNE :ans = val1 != val2; 
-        `BLT :ans = $signed(val1) < $signed(val2); 
+        `BLT :begin 
+            ans = $signed(val1) < $signed(val2); 
+            //  $display("%s","BLT");
+            // $display("%b",val1);
+            // $display("%b",val2);
+        end
         `BGE :ans = $signed(val1) >= $signed(val2); 
         `BLTU:begin
              ans = val1 < val2; 

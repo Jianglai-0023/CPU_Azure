@@ -84,9 +84,16 @@ always @(*) begin
             is_write = `False;
         end
         `SB:begin
+            // if(lsb_addr==32'h30000)begin
+            //     $display("%d",lsb_store[7 : 0]);
+            //     is_write = `False;
+            // end
+            // else begin
             mem_a = lsb_addr;
             mem_write = lsb_store[7 : 0];
             is_write = `True;
+            // end
+            
         end
         `SH:begin
             mem_a = lsb_addr + {31'b0,lsb_onestp};

@@ -155,13 +155,13 @@ always @(posedge clk)begin
     if(alu_ans_flag)begin//给rename赋值
     
         for(i = 0; i < `RSSIZE; i = i + 1)begin
-                if(used[i]&&!val1_ready[i]&&val1[i] == {28'b0,rob_reorder})begin
+                if(used[i]&&!val1_ready[i]&&val1[i] == {28'b0,alu_ans_reorder})begin
     
     
                     val1_ready[i] <= `True;
                     val1[i] <= alu_ans;
                 end
-                if(used[i]&&!val2_ready[i]&&val2[i] == {28'b0,rob_reorder})begin
+                if(used[i]&&!val2_ready[i]&&val2[i] == {28'b0,alu_ans_reorder})begin
     
     
                     val2_ready[i] <= `True;
