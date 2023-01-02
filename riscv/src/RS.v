@@ -71,7 +71,7 @@ always @(posedge clk)begin
         flag_alu <= 0;
     end
     else if(!rdy)begin
-        $display("%s","RDY appear");
+        // $display("%s","RDY appear");
          flag_alu <= `False;
     end
     else if(opflag)begin//加入新的op

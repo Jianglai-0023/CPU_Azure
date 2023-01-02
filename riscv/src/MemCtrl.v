@@ -84,15 +84,19 @@ always @(*) begin
             is_write = `False;
         end
         `SB:begin
-            // if(lsb_addr==32'h30000)begin
-            //     $display("%d",lsb_store[7 : 0]);
-            //     is_write = `False;
-            // end
-            // else begin
+            if(lsb_addr==32'h30000)begin
+                // $display("%s","###");
+                // $display("%d",lsb_store[7 : 0]);
+                // is_write = `False;
+                mem_a = lsb_addr;
+            mem_write = lsb_store[7 : 0];
+            is_write = `True;
+            end
+            else begin
             mem_a = lsb_addr;
             mem_write = lsb_store[7 : 0];
             is_write = `True;
-            // end
+            end
             
         end
         `SH:begin
@@ -129,7 +133,10 @@ always @(*) begin
             end
             endcase
         end
-        default:is_write = `False;
+        default:begin
+            is_write = `False;
+            mem_a = 32'b0;
+        end
         endcase
        end
        else if(ic_flag )begin
@@ -139,7 +146,7 @@ always @(*) begin
        end
        else begin
         is_write = `False;
-        
+        mem_a = 32'b0;
        end
     end
 end
