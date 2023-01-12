@@ -46,25 +46,31 @@ assign isfull = full;
 assign flag = !mem_ok & tomem_flag;
 always @(*) begin
     if(rst)begin
-        for(i = 0; i < 16;i = i+1)begin
-            ins[i] =6'b0;
-            imm_val[i] = 32'b0;
-            rs1_val[i] = 32'b0;
-            rs2_val[i] = 32'b0;
-            ROB_idx[i] = 4'b0;
-        end
        
+       full = 0;
     end
-    else if(!rdy);
+    else if(!rdy)begin
+        full = 0;
+    end
     else begin
-
+        if(is_commit==16'b0)begin
+            full = 1;
+        end
+        else full = 0;
     end
 end
 always @(posedge clk) begin//接受信息，将指令加入lsb
     if(rst)begin
+        for(i = 0; i < 16; i=i+1)begin
+            ROB_idx[i] <= 4'b0;
+            imm_val[i] = 32'b0;
+             ins[i] =6'b0;
+            rs1_val[i] = 32'b0;
+            rs2_val[i] = 32'b0;
+        end
         tomem_flag <= 0;
         is_commit <= 16'b1111111111111111;
-        full <= 0;
+        // full <= 0;
         rs1_ready <= 16'b0;
         rs2_ready <= 16'b0;
         front <= 4'b0;
@@ -116,20 +122,28 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
             end
             default:;
         endcase
-        
-        if(front==rear && is_commit[front]==`False)begin//rear
-            full <= `True;
-        end
-        else full <= `False;
+        // if(ophead==`JALROP || ophead == `BRANCHOP || ophead == `ITYPEOP || ophead == `STYPEOP)begin
+        //     if(front==-(~rear) && rs1_ready[front] && rs2_ready[front])begin//rear
+        //         if(ins[front]==`JALR || ins[front]==`BEQ||ins[front]==`BNE||ins[front]==`BLT||ins[front]==`BGE||ins[front]==`BLTU||ins[front]==`BGEU)begin
+        //             full <= `False;
+        //         end
+        //         else if(mem_ok)begin
+        //             full <= `False;
+        //         end
+        //         else full <= `False;
+        //     end
+        // end
     end
     
-    if(front != rear || front == rear && is_commit[front] == `False)begin//push front
+    
+    if(front != rear || (front == rear && is_commit[front] == `False))begin//push front
         if(rs1_ready[front]&&rs2_ready[front])begin
-        // $display("%s","LSB can commit");
             if(ins[front]==`JALR || ins[front]==`BEQ||ins[front]==`BNE||ins[front]==`BLT||ins[front]==`BGE||ins[front]==`BLTU||ins[front]==`BGEU)begin
                 is_commit[front] <= `True;
                 front <= -(~front);
                 lsb_flag<=`False;
+                // if(full)full <= `False;
+                // else ;
             end
             else begin
                 lsb_op <= ins[front];
@@ -139,9 +153,11 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
                 //     $display("%d",lsb_op);
                 //     $display("%d",addr); 
                 //     if(lsb_op==`SB || lsb_op == `SW || lsb_op == `SH)begin
+                    
                 //         $display("%d",val_out);
                 //     end
                 //     else begin
+                        
                 //         case(lsb_op)
                 //         `LB:$display("%d",{{24{val_in[7]}}, val_in[7:0]});
                 //         `LH:$display("%d",{{16{val_in[15]}},val_in[15:0]});
@@ -162,7 +178,8 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
                             lsb_val <={{24{val_in[7]}}, val_in[7:0]};
                             is_commit[front] <= `True;
                             front <= -(~front);
-
+                            // if(full)full <= `False;
+                            // else ;
                         end
                         else begin
                             lsb_flag <= `False;
@@ -179,6 +196,8 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
                             lsb_val <= {{16{val_in[15]}},val_in[15:0]};
                             is_commit[front] <= `True;
                             front <= -(~front); 
+                            // if(full)full <= `False;
+                            // else ;
                         end
                         else begin
                             lsb_flag <= `False;
@@ -194,14 +213,9 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
                             lsb_val <= val_in;
                             is_commit[front] <= `True;
                             front <= -(~front); 
-                            // $display("%s","ANSWER");
-                            // $display("%d",val_in); 
-                            // $display("%s","-------");
-                            // $display("%d",addr);
-                            // $display("%x",addr); 
-                            // // $display("%d",rs2_val[front]);
-                            // // $display("%x",rs2_val[front]);
-                            // $display("%s","********");
+                            // if(full)full <= `False;
+                            // else ;
+                            
                         end
                         else begin
                             lsb_flag <= `False;
@@ -219,6 +233,8 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
                             lsb_val <= {24'b0,val_in[7:0]};
                             is_commit[front] <= `True;
                             front <= -(~front); 
+                            // if(full)full <= `False;
+                            // else ;
                         end
                         else begin
                             lsb_flag <= `False;
@@ -234,6 +250,8 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
                             lsb_val <= {16'b0,val_in[15:0]};
                             is_commit[front] <= `True;
                             front <= -(~front); 
+                            // if(full)full <= `False;
+                            // else ;
                         end
                         else begin
                             lsb_flag <= `False;
@@ -247,6 +265,8 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
                             tomem_flag <= `False;
                             is_commit[front] <= `True;
                             front <= -(~front); 
+                            // if(full)full <= `False;
+                            // else ;
                         end
                         else begin
                         
@@ -262,6 +282,8 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
                             tomem_flag <= `False;
                             is_commit[front] <= `True;
                             front <= -(~front); 
+                            // if(full)full <= `False;
+                            // else ;
                             // $display("%s","-----SW-----");
                             // $display("%d",addr);
                             // $display("%x",addr); 
@@ -282,6 +304,8 @@ always @(posedge clk) begin//接受信息，将指令加入lsb
                             tomem_flag <= `False;
                             is_commit[front] <= `True;
                             front <= -(~front); 
+                            // if(full)full <= `False;
+                            // else ;
                         end
                         else begin
                             addr <= rs1_val[front] + imm_val[front];
